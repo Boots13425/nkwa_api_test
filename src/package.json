@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,11 +13,8 @@
   "description": "this is a full stack to do application that uses node js for the backend",
   "dependencies": {
     "@nkwa-pay/sdk": "^0.1.4",
-    "bcryptjs": "^3.0.2",
-    "better-sqlite3": "^11.10.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.10"
   }
 }
