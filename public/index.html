@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nkwa Pay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee; /* Added separator */
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message-box {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none; /* Hidden by default */
+            font-weight: bold;
+        }
+
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Nkwa Pay</h1>
+
+        <div class="form-container">
+            <h2>Collect Payment</h2>
+            <form id="collect-payment-form">
+                <label for="collect-amount">Amount:</label>
+                <input type="number" id="collect-amount" name="amount" required step="0.01">
+                <label for="collect-phone">Phone Number:</label>
+                <input type="text" id="collect-phone" name="phoneNumber" required>
+                <button type="submit">Collect Payment</button>
+            </form>
+            <div id="collect-message" class="message-box"></div>
+        </div>
+
+        <div class="form-container">
+            <h2>Disburse Payment</h2>
+            <form id="disburse-payment-form">
+                <label for="disburse-amount">Amount:</label>
+                <input type="number" id="disburse-amount" name="amount" required step="0.01">
+                <label for="disburse-phone">Phone Number:</label>
+                <input type="text" id="disburse-phone" name="phoneNumber" required>
+                <button type="submit">Disburse Payment</button>
+            </form>
+            <div id="disburse-message" class="message-box"></div>
+        </div>
+
+        <div class="form-container">
+            <h2>Check Payment Status</h2>
+            <form id="payment-status-form">
+                <label for="payment-id">Payment ID:</label>
+                <input type="text" id="payment-id" name="id" required>
+                <button type="submit">Check Status</button>
+            </form>
+            <div id="status-message" class="message-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // Helper function to display messages
+        function displayMessage(elementId, message, type) {
+            const msgBox = document.getElementById(elementId);
+            msgBox.textContent = message;
+            msgBox.className = `message-box ${type}`; // Apply success or error class
+            msgBox.style.display = 'block'; // Show the message box
+            setTimeout(() => {
+                msgBox.style.display = 'none'; // Hide after 5 seconds
+            }, 5000);
+        }
+
+        document.getElementById('collect-payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Convert amount to a number!
+            const amount = parseFloat(document.getElementById('collect-amount').value);
+            const phoneNumber = document.getElementById('collect-phone').value;
+
+            // Basic client-side validation
+            if (isNaN(amount) || amount <= 0) {
+                displayMessage('collect-message', 'Please enter a valid amount.', 'error');
+                return;
+            }
+            if (!phoneNumber) {
+                 displayMessage('collect-message', 'Phone number is required.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/collect-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount, phoneNumber }) // amount is now a number
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    displayMessage('collect-message', 'Payment collected successfully! ID: ' + data.data.id, 'success');
+                } else {
+                    // Check if error message is directly in data.error or nested
+                    const errorMessage = data.error || (data.debugMessage ? `Server Error: ${data.debugMessage}` : 'Unknown error during collection.');
+                    displayMessage('collect-message', 'Error collecting payment: ' + errorMessage, 'error');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                displayMessage('collect-message', 'Network error or server unreachable. Please try again.', 'error');
+            }
+        });
+
+        document.getElementById('disburse-payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Convert amount to a number!
+            const amount = parseFloat(document.getElementById('disburse-amount').value);
+            const phoneNumber = document.getElementById('disburse-phone').value;
+
+             // Basic client-side validation
+            if (isNaN(amount) || amount <= 0) {
+                displayMessage('disburse-message', 'Please enter a valid amount.', 'error');
+                return;
+            }
+            if (!phoneNumber) {
+                 displayMessage('disburse-message', 'Phone number is required.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/disburse-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount, phoneNumber }) // amount is now a number
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    displayMessage('disburse-message', 'Payment disbursed successfully! ID: ' + data.data.id, 'success');
+                } else {
+                    const errorMessage = data.error || (data.debugMessage ? `Server Error: ${data.debugMessage}` : 'Unknown error during disbursement.');
+                    displayMessage('disburse-message', 'Error disbursing payment: ' + errorMessage, 'error');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                displayMessage('disburse-message', 'Network error or server unreachable. Please try again.', 'error');
+            }
+        });
+
+        document.getElementById('payment-status-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('payment-id').value;
+
+            if (!id) {
+                displayMessage('status-message', 'Payment ID is required.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/payment/${id}`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    displayMessage('status-message', `Payment ID: ${data.data.id}, Status: ${data.data.status}, Amount: $${data.data.amount}`, 'success');
+                } else {
+                     const errorMessage = data.error || (data.debugMessage ? `Server Error: ${data.debugMessage}` : 'Unknown error checking status.');
+                    displayMessage('status-message', 'Error checking status: ' + errorMessage, 'error');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                displayMessage('status-message', 'Network error or server unreachable. Please try again.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

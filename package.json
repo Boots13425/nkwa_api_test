@@ -1,0 +1,24 @@
+{
+  "name": "chapter-3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env ./src/server.js",
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "this is a full stack to do application that uses node js for the backend",
+  "dependencies": {
+    "@nkwa-pay/sdk": "^0.1.4",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.10"
+  }
+}
